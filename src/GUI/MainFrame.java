@@ -53,6 +53,7 @@ public class MainFrame extends JFrame implements ActionListener {
             if(connectOrDisconnect.getLabel().equals(CONNECTION.CONNECT.toString())){
                 connectOrDisconnect.setLabel(CONNECTION.DISCONNECT.toString());
                 SwingUtilities.invokeLater(()->{client=new LCClient(this);});
+                out.println("client invoked");
 //                client=new LCClient(this);
             }else if(connectOrDisconnect.getLabel().equals(CONNECTION.DISCONNECT.toString())){
                 connectOrDisconnect.setLabel(CONNECTION.CONNECT.toString());
@@ -63,6 +64,7 @@ public class MainFrame extends JFrame implements ActionListener {
             if(startOrStopServer.getLabel().equals(CONNECTION.START_SERVER.toString())){
                 startOrStopServer.setLabel(CONNECTION.STOP_SERVER.toString());
                 SwingUtilities.invokeLater(()->{server=new LCServer(this);});
+                out.println("server invoked");
 //                server=new LCServer(this);
             }else if(startOrStopServer.getLabel().equals(CONNECTION.STOP_SERVER.toString())){
                 connectOrDisconnect.setLabel(CONNECTION.START_SERVER.toString());
