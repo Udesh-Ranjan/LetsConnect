@@ -1,4 +1,5 @@
 import GUI.MainFrame;
+import enums.CONNECTION;
 
 import javax.swing.*;
 import java.io.PrintStream;

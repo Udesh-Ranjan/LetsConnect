@@ -28,5 +28,13 @@ public enum CONNECTION {
         public String toString(){
             return "STOP_SERVER";
         }
-    }
+    },
+    CLOSE_SESSION{
+      @Override
+      public String toString(){
+          return "CLOSE_SESSION";
+      }
+    },
+    REQUEST_ACCEPTED,
+    REQUEST_REJECTED
 }

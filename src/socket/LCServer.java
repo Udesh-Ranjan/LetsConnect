@@ -1,6 +1,7 @@
 package socket;
 
 import GUI.MainFrame;
+import enums.CONNECTION;
 
 import javax.swing.*;
 import java.io.*;
@@ -29,7 +30,8 @@ public class LCServer {
         this.mainFrame=mainFrame;
         isRunning=false;
 //        SwingUtilities.invokeLater(()->{initializeServer();});
-        initializeServer();
+        (new Thread(()->initializeServer())).start();
+//        initializeServer();
     }
     public void initializeServer(){
         try {
@@ -47,6 +49,7 @@ public class LCServer {
                 startSession();
             } else {
                 out.println("Request rejected");
+                dout.writeUTF(CONNECTION.REQUEST_REJECTED.toString());
                 closeSession();
             }
         }catch(IOException ioException){
@@ -61,13 +64,18 @@ public class LCServer {
         try {
             while (true) {
                 msg = din.readUTF();
-                if(msg.equals("close session")){
+                if(msg.equals(CONNECTION.CLOSE_SESSION.toString())){
                     closeSession();
+                    break;
                 }
                 out.println("client>"+msg);
                 out.print("please input : ");
                 msg=br.readLine();
                 dout.writeUTF(msg);
+                if(msg.equals(CONNECTION.CLOSE_SESSION.toString())){
+                    closeSession();
+                    break;
+                }
             }
         }catch(IOException ioException){
             ioException.printStackTrace();
@@ -85,6 +93,8 @@ public class LCServer {
                 dout.close();
             if(socket!=null && !socket.isClosed())
                 socket.close();
+            if(serverSocket!=null && !serverSocket.isClosed())
+                serverSocket.close();
         }catch(IOException ioException){
             ioException.printStackTrace();
         }

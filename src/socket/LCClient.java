@@ -1,6 +1,7 @@
 package socket;
 
 import GUI.MainFrame;
+import enums.CONNECTION;
 
 import javax.swing.*;
 import java.io.*;
@@ -35,9 +36,11 @@ public class LCClient {
             out.println("Client requested");
             din = new DataInputStream(socket.getInputStream());
             dout = new DataOutputStream(socket.getOutputStream());
-            sessionStarted();
+//            sessionStarted();
+            (new Thread(()->sessionStarted())).start();
         }catch(IOException ioException){
             ioException.printStackTrace();
+            closeSession();
         }
     }
     public void sessionStarted(){
@@ -48,8 +51,20 @@ public class LCClient {
                 out.print("Please enter some string : ");
                 msg=br.readLine();
                 dout.writeUTF(msg);
+                if(msg.equals(CONNECTION.CLOSE_SESSION.toString())){
+                    closeSession();
+                    break;
+                }
                 msg=din.readUTF();
                 out.println("server>"+msg);
+                if(msg.equals(CONNECTION.CLOSE_SESSION.toString())){
+                    closeSession();
+                    break;
+                }else if(msg.equals(CONNECTION.REQUEST_REJECTED.toString())){
+                    out.println(CONNECTION.REQUEST_REJECTED);
+                    closeSession();
+                    break;
+                }
             }
         }catch(final IOException ioException){
             ioException.printStackTrace();
@@ -57,6 +72,7 @@ public class LCClient {
         }
     }
     public void closeSession(){
+        out.println("Closing Session");
         isRunning=false;
         try{
             if(din!=null)

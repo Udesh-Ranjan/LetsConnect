@@ -52,9 +52,9 @@ public class MainFrame extends JFrame implements ActionListener {
         if(e.getSource()== connectOrDisconnect){
             if(connectOrDisconnect.getText().equals(CONNECTION.CONNECT.toString())){
                 connectOrDisconnect.setText(CONNECTION.DISCONNECT.toString());
-                SwingUtilities.invokeLater(()->{client=new LCClient(this);});
+//                SwingUtilities.invokeLater(()->{client=new LCClient(this);});
+                client=new LCClient(this);
                 out.println("client invoked");
-//                client=new LCClient(this);
             }else if(connectOrDisconnect.getText().equals(CONNECTION.DISCONNECT.toString())){
                 connectOrDisconnect.setText(CONNECTION.CONNECT.toString());
                 client.closeSession();
@@ -63,7 +63,8 @@ public class MainFrame extends JFrame implements ActionListener {
         if(e.getSource()== startOrStopServer){
             if(startOrStopServer.getText().equals(CONNECTION.START_SERVER.toString())){
                 startOrStopServer.setText(CONNECTION.STOP_SERVER.toString());
-                SwingUtilities.invokeLater(()->{server=new LCServer(this);});
+//                SwingUtilities.invokeLater(()->{server=new LCServer(this);});
+                server=new LCServer(this);
                 out.println("server invoked");
 //                server=new LCServer(this);
             }else if(startOrStopServer.getText().equals(CONNECTION.STOP_SERVER.toString())){
