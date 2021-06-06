@@ -18,7 +18,7 @@ public class LCClient {
         out=System.out;
         br=new BufferedReader(new InputStreamReader(System.in));
     }
-    private int port=55535;
+    private int port=52535;
     private Socket socket;
     private DataInputStream din;
     private DataOutputStream dout;
@@ -29,6 +29,7 @@ public class LCClient {
         this.mainFrame=mainFrame;
         isRunning=false;
         address= JOptionPane.showInputDialog(mainFrame,"Please input IP-Address","127.0.0.1");
+        out.println("address : "+address);
         try {
             socket = new Socket(address, port);
             out.println("Client requested");

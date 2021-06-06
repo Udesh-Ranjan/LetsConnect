@@ -50,25 +50,25 @@ public class MainFrame extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()== connectOrDisconnect){
-            if(connectOrDisconnect.getLabel().equals(CONNECTION.CONNECT.toString())){
-                connectOrDisconnect.setLabel(CONNECTION.DISCONNECT.toString());
+            if(connectOrDisconnect.getText().equals(CONNECTION.CONNECT.toString())){
+                connectOrDisconnect.setText(CONNECTION.DISCONNECT.toString());
                 SwingUtilities.invokeLater(()->{client=new LCClient(this);});
                 out.println("client invoked");
 //                client=new LCClient(this);
-            }else if(connectOrDisconnect.getLabel().equals(CONNECTION.DISCONNECT.toString())){
-                connectOrDisconnect.setLabel(CONNECTION.CONNECT.toString());
+            }else if(connectOrDisconnect.getText().equals(CONNECTION.DISCONNECT.toString())){
+                connectOrDisconnect.setText(CONNECTION.CONNECT.toString());
                 client.closeSession();
             }
         }
         if(e.getSource()== startOrStopServer){
-            if(startOrStopServer.getLabel().equals(CONNECTION.START_SERVER.toString())){
-                startOrStopServer.setLabel(CONNECTION.STOP_SERVER.toString());
+            if(startOrStopServer.getText().equals(CONNECTION.START_SERVER.toString())){
+                startOrStopServer.setText(CONNECTION.STOP_SERVER.toString());
                 SwingUtilities.invokeLater(()->{server=new LCServer(this);});
                 out.println("server invoked");
 //                server=new LCServer(this);
-            }else if(startOrStopServer.getLabel().equals(CONNECTION.STOP_SERVER.toString())){
-                connectOrDisconnect.setLabel(CONNECTION.START_SERVER.toString());
-                client.closeSession();
+            }else if(startOrStopServer.getText().equals(CONNECTION.STOP_SERVER.toString())){
+                startOrStopServer.setText(CONNECTION.START_SERVER.toString());
+                server.closeSession();
             }
         }
     }
