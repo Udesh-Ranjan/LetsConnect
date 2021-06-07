@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.PrintStream;
 
 /**
@@ -25,6 +26,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private JMenuItem startOrStopServer;
     private LCServer server;
     private LCClient client;
+    private BufferedImage img;
     public MainFrame(){
         Toolkit toolkit=Toolkit.getDefaultToolkit();
         Dimension screenSize=toolkit.getScreenSize();
@@ -72,5 +74,15 @@ public class MainFrame extends JFrame implements ActionListener {
                 server.closeSession();
             }
         }
+    }
+    @Override
+    public void paint(Graphics g){
+        if(img!=null){
+            g.drawImage(img,0,0,this);
+        }
+    }
+    public void setImage(BufferedImage img){
+        this.img=img;
+        repaint();
     }
 }

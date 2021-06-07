@@ -2,8 +2,13 @@ package socket;
 
 import GUI.MainFrame;
 import enums.CONNECTION;
+import enums.TRANSFER;
+import img.LCImage;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -68,20 +73,58 @@ public class LCServer {
                     closeSession();
                     break;
                 }
-                out.println("client>"+msg);
+                if(msg.equals(TRANSFER.FILE_TRANSFER.toString())){
+                    serialize(dout,createScreenCapture());
+                }
+               /* out.println("client>"+msg);
                 out.print("please input : ");
                 msg=br.readLine();
                 dout.writeUTF(msg);
                 if(msg.equals(CONNECTION.CLOSE_SESSION.toString())){
                     closeSession();
                     break;
-                }
+                }*/
             }
         }catch(IOException ioException){
             ioException.printStackTrace();
             isRunning=false;
             closeSession();
         }
+    }
+    public void serialize(DataOutputStream out, BufferedImage img)throws IOException{
+        /*out.writeUTF(TRANSFER.FILE_TRANSFER.toString());
+        out.flush();*/
+        ByteArrayOutputStream baos=new ByteArrayOutputStream();
+        ImageIO.write(img,"png",baos);
+        //baos.flush();
+        byte by[]=baos.toByteArray();
+        System.out.println("image : ");
+//        printBytes(by,0,by.length);
+        out.writeUTF(String.valueOf(by.length));
+        out.flush();
+//        ByteArrayInputStream bin=new ByteArrayInputStream(by);
+//        int read;
+        int size=4096;
+        System.out.println("length : "+by.length);
+        for(int i=0;by.length>i*size;i++){
+            out.write(by,i*size,Math.min(by.length-i*size,size));
+            out.flush();
+//            printBytes(by,i*size,Math.min(by.length-i*size,size));
+        }
+        /*byte[]eof=TRANSFER.EOF.toString().getBytes();
+        System.out.println("Writing : "+TRANSFER.EOF.toString());
+        printBytes(eof,0,eof.length);
+        out.write(eof);
+        out.flush();*/
+    }
+    public static BufferedImage createScreenCapture(){
+        BufferedImage img=null;
+        try{
+            img=(new Robot()).createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+        }catch(AWTException awtException){
+            awtException.printStackTrace();
+        }
+        return img;
     }
     public void closeSession(){
         out.println("Closing Session");

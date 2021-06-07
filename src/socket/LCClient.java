@@ -2,8 +2,11 @@ package socket;
 
 import GUI.MainFrame;
 import enums.CONNECTION;
+import enums.TRANSFER;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -48,7 +51,7 @@ public class LCClient {
         String msg;
         try{
             while(true){
-                out.print("Please enter some string : ");
+                /*out.print("Please enter some string : ");
                 msg=br.readLine();
                 dout.writeUTF(msg);
                 if(msg.equals(CONNECTION.CLOSE_SESSION.toString())){
@@ -64,12 +67,49 @@ public class LCClient {
                     out.println(CONNECTION.REQUEST_REJECTED);
                     closeSession();
                     break;
-                }
+                }*/
+                dout.writeUTF(TRANSFER.FILE_TRANSFER.toString());
+                BufferedImage img=deserializeImage(din);
+                if(img!=null){
+                    mainFrame.setImage(img);
+                    mainFrame.repaint();
+                }else out.println("error image is null");
+                Thread.sleep(1000/32);
             }
-        }catch(final IOException ioException){
-            ioException.printStackTrace();
+        }catch(final IOException | InterruptedException exception){
+            exception.printStackTrace();
             closeSession();
         }
+    }
+    public static BufferedImage deserializeImage(DataInputStream din)throws IOException{
+        BufferedImage img=null;
+        int size=4096;
+        byte []b=new byte[size];
+        byte eof[]= TRANSFER.EOF.toString().getBytes();
+        int read;
+        int length=Integer.parseInt(din.readUTF());
+        System.out.println(length);
+        byte[]_img=new byte[length];
+        int index=0;
+        while(index<length && (read=din.read(b))!=-1){
+//            printBytes(b,read);
+            if(read==eof.length){
+                boolean EOF=true;
+                for(int i=0;i<eof.length;i++)
+                    if(eof[i]!=b[i]){
+                        EOF=false;
+                        break;
+                    }
+                if(EOF){
+                    System.out.println(TRANSFER.EOF);
+                    break;
+                }
+            }
+            for(int i=0;i<read && index<_img.length;i++)
+                _img[index++]=b[i];
+        }
+        img= ImageIO.read(new ByteArrayInputStream(_img));
+        return img;
     }
     public void closeSession(){
         out.println("Closing Session");
