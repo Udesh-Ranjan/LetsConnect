@@ -74,7 +74,7 @@ public class LCClient {
                     mainFrame.setImage(img);
                     mainFrame.repaint();
                 }else out.println("error image is null");
-                Thread.sleep(1000/32);
+                Thread.sleep(1000/900);
             }
         }catch(final IOException | InterruptedException exception){
             exception.printStackTrace();
