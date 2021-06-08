@@ -11,13 +11,15 @@ import java.io.PrintStream;
 public class MainClass {
     private static final PrintStream out;
     private static MainFrame mainFrame;
-    static{
-        out=System.out;
+
+    static {
+        out = System.out;
     }
-    public static void main(final String $[]){
+
+    public static void main(final String $[]) {
         out.println("main");
-        SwingUtilities.invokeLater(()->{
-            mainFrame=new MainFrame();
+        SwingUtilities.invokeLater(() -> {
+            mainFrame = new MainFrame();
         });
     }
 }

@@ -10,26 +10,29 @@ import java.io.*;
  */
 public class LCImage implements Serializable {
     public transient BufferedImage img;
-    public LCImage(BufferedImage img){
-        this.img=img;
+
+    public LCImage(BufferedImage img) {
+        this.img = img;
     }
-    public void writeObject(ObjectOutputStream out){
+
+    public void writeObject(ObjectOutputStream out) {
         try {
             out.defaultWriteObject();
             System.out.println("writing image");
 //            out.writeChars("BufferedImage");
             ImageIO.write(img, "png", out);
-        }catch(IOException ioException){
+        } catch (IOException ioException) {
             ioException.printStackTrace();
         }
     }
-    public void readObject(ObjectInputStream in){
+
+    public void readObject(ObjectInputStream in) {
         try {
             in.defaultReadObject();
             img = ImageIO.read(in);
-        }catch(IOException ioException){
+        } catch (IOException ioException) {
             ioException.printStackTrace();
-        }catch(ClassNotFoundException classNotFoundException){
+        } catch (ClassNotFoundException classNotFoundException) {
             classNotFoundException.printStackTrace();
         }
     }

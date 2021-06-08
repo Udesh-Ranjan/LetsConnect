@@ -18,39 +18,48 @@ import java.net.Socket;
 public class LCClient {
     private static final PrintStream out;
     private static final BufferedReader br;
+    final static byte eof[] = TRANSFER.EOF.toString().getBytes();
+    final static int delay = 10;
+
     static {
-        out=System.out;
-        br=new BufferedReader(new InputStreamReader(System.in));
+        out = System.out;
+        br = new BufferedReader(new InputStreamReader(System.in));
     }
-    private int port=52535;
+
+    private int port = 52535;
     private Socket socket;
     private DataInputStream din;
     private DataOutputStream dout;
     private MainFrame mainFrame;
     private boolean isRunning;
     private String address;
-    public LCClient(final MainFrame mainFrame){
-        this.mainFrame=mainFrame;
-        isRunning=false;
-        address= JOptionPane.showInputDialog(mainFrame,"Please input IP-Address","127.0.0.1");
-        out.println("address : "+address);
+    final int size = 4096000;
+    final byte[] b = new byte[size];
+
+    public LCClient(final MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        isRunning = false;
+        (new Thread(() -> sessionStarted())).start();
+    }
+
+    public void sessionStarted() {
+        address = JOptionPane.showInputDialog(mainFrame, "Please input IP-Address", "127.0.0.1");
+        out.println("address : " + address);
         try {
             socket = new Socket(address, port);
             out.println("Client requested");
             din = new DataInputStream(socket.getInputStream());
             dout = new DataOutputStream(socket.getOutputStream());
 //            sessionStarted();
-            (new Thread(()->sessionStarted())).start();
-        }catch(IOException ioException){
+        } catch (final IOException ioException) {
             ioException.printStackTrace();
             closeSession();
         }
-    }
-    public void sessionStarted(){
-        isRunning=true;
+        isRunning = true;
         String msg;
-        try{
-            while(true){
+        long prevTime = 0, currentTime = 0;
+        try {
+            while (true) {
                 /*out.print("Please enter some string : ");
                 msg=br.readLine();
                 dout.writeUTF(msg);
@@ -69,61 +78,68 @@ public class LCClient {
                     break;
                 }*/
                 dout.writeUTF(TRANSFER.FILE_TRANSFER.toString());
-                BufferedImage img=deserializeImage(din);
-                if(img!=null){
+                final BufferedImage img = deserializeImage(din);
+                if (img != null) {
                     mainFrame.setImage(img);
                     mainFrame.repaint();
-                }else out.println("error image is null");
-                Thread.sleep(1000/900);
+                } else out.println("error image is null");
+                currentTime = System.currentTimeMillis();
+                if (!(currentTime - prevTime > delay)) {
+                    System.out.println("delay of : " + (delay - (currentTime - prevTime)));
+                    Thread.sleep(delay - (currentTime - prevTime));
+                }
+                prevTime = currentTime;
             }
-        }catch(final IOException | InterruptedException exception){
+        } catch (final IOException | InterruptedException exception) {
             exception.printStackTrace();
             closeSession();
         }
     }
-    public static BufferedImage deserializeImage(DataInputStream din)throws IOException{
-        BufferedImage img=null;
-        int size=4096;
-        byte []b=new byte[size];
-        byte eof[]= TRANSFER.EOF.toString().getBytes();
+
+    public BufferedImage deserializeImage(final DataInputStream din) throws IOException {
+        BufferedImage img = null;
         int read;
-        int length=Integer.parseInt(din.readUTF());
+        final int length = Integer.parseInt(din.readUTF());
         System.out.println(length);
-        byte[]_img=new byte[length];
-        int index=0;
-        while(index<length && (read=din.read(b))!=-1){
+        byte[] _img = new byte[length];
+        int index = 0;
+        while (index < length && (read = din.read(b)) != -1) {
 //            printBytes(b,read);
-            if(read==eof.length){
-                boolean EOF=true;
-                for(int i=0;i<eof.length;i++)
-                    if(eof[i]!=b[i]){
-                        EOF=false;
+            if (read == eof.length) {
+                boolean EOF = true;
+                for (int i = 0; i < eof.length; i++)
+                    if (eof[i] != b[i]) {
+                        EOF = false;
                         break;
                     }
-                if(EOF){
+                if (EOF) {
                     System.out.println(TRANSFER.EOF);
                     break;
                 }
             }
-            for(int i=0;i<read && index<_img.length;i++)
-                _img[index++]=b[i];
+            for (int i = 0; i < read && index < _img.length; i++)
+                _img[index++] = b[i];
         }
-        img= ImageIO.read(new ByteArrayInputStream(_img));
+        img = ImageIO.read(new ByteArrayInputStream(_img));
         return img;
     }
-    public void closeSession(){
+
+    public void closeSession() {
         out.println("Closing Session");
-        isRunning=false;
-        try{
-            if(din!=null)
+        isRunning = false;
+        try {
+            if (din != null)
                 din.close();
-            if(dout!=null)
+            if (dout != null)
                 dout.close();
-            if(socket!=null && !socket.isClosed())
+            if (socket != null && !socket.isClosed())
                 socket.close();
-        }catch(final IOException exception){
+        } catch (final IOException exception) {
             exception.printStackTrace();
         }
     }
-    public boolean isRunning(){return isRunning;}
+
+    public boolean isRunning() {
+        return isRunning;
+    }
 }

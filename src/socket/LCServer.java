@@ -20,32 +20,45 @@ import java.net.Socket;
 public class LCServer {
     private static final PrintStream out;
     private static final BufferedReader br;
+    private static Robot robot;
+    private static final Rectangle screenSize;
+    final static int size = 4096000;
+
     static {
-        out=System.out;
-        br=new BufferedReader(new InputStreamReader(System.in));
+        out = System.out;
+        br = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            robot = new Robot();
+        } catch (AWTException awtException) {
+            awtException.printStackTrace();
+        }
+        screenSize = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
     }
-    private int port=52535;
+
+    private static final int port = 52535;
     private Socket socket;
     private ServerSocket serverSocket;
     private DataInputStream din;
     private DataOutputStream dout;
     private MainFrame mainFrame;
     private boolean isRunning;
-    public LCServer(MainFrame mainFrame){
-        this.mainFrame=mainFrame;
-        isRunning=false;
+
+    public LCServer(final MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        isRunning = false;
 //        SwingUtilities.invokeLater(()->{initializeServer();});
-        (new Thread(()->initializeServer())).start();
+        (new Thread(() -> initializeServer())).start();
 //        initializeServer();
     }
-    public void initializeServer(){
+
+    public void initializeServer() {
         try {
             serverSocket = new ServerSocket(port);
             out.println("Server started");
             socket = serverSocket.accept();
             out.println("Client requested");
-            din=new DataInputStream(socket.getInputStream());
-            dout=new DataOutputStream(socket.getOutputStream());
+            din = new DataInputStream(socket.getInputStream());
+            dout = new DataOutputStream(socket.getOutputStream());
             int choice = JOptionPane.YES_NO_OPTION;
             int result = JOptionPane.showConfirmDialog(mainFrame,
                     "Do you with to connect to : " + socket.getInetAddress().getHostAddress(),
@@ -57,24 +70,27 @@ public class LCServer {
                 dout.writeUTF(CONNECTION.REQUEST_REJECTED.toString());
                 closeSession();
             }
-        }catch(IOException ioException){
+        } catch (final IOException ioException) {
             ioException.printStackTrace();
             closeSession();
         }
     }
-    public void startSession(){
+
+    public void startSession() {
         out.println("Start Session");
-        isRunning=true;
+        isRunning = true;
         String msg;
         try {
             while (true) {
                 msg = din.readUTF();
-                if(msg.equals(CONNECTION.CLOSE_SESSION.toString())){
+                if (msg.equals(CONNECTION.CLOSE_SESSION.toString())) {
                     closeSession();
                     break;
                 }
-                if(msg.equals(TRANSFER.FILE_TRANSFER.toString())){
-                    serialize(dout,createScreenCapture());
+                if (msg.equals(TRANSFER.FILE_TRANSFER.toString())) {
+                    final BufferedImage img = createScreenCapture();
+                    serialize(dout, img);
+//                    img.flush();
                 }
                /* out.println("client>"+msg);
                 out.print("please input : ");
@@ -85,29 +101,30 @@ public class LCServer {
                     break;
                 }*/
             }
-        }catch(IOException ioException){
+        } catch (final IOException ioException) {
             ioException.printStackTrace();
-            isRunning=false;
+            isRunning = false;
             closeSession();
         }
     }
-    public void serialize(DataOutputStream out, BufferedImage img)throws IOException{
+
+    public void serialize(final DataOutputStream out, final BufferedImage img) throws IOException {
         /*out.writeUTF(TRANSFER.FILE_TRANSFER.toString());
         out.flush();*/
-        ByteArrayOutputStream baos=new ByteArrayOutputStream();
-        ImageIO.write(img,"png",baos);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.flush();
+        ImageIO.write(img, "png", baos);
         //baos.flush();
-        byte by[]=baos.toByteArray();
+        byte by[] = baos.toByteArray();
         System.out.println("image : ");
 //        printBytes(by,0,by.length);
         out.writeUTF(String.valueOf(by.length));
         out.flush();
 //        ByteArrayInputStream bin=new ByteArrayInputStream(by);
 //        int read;
-        int size=4096;
-        System.out.println("length : "+by.length);
-        for(int i=0;by.length>i*size;i++){
-            out.write(by,i*size,Math.min(by.length-i*size,size));
+        System.out.println("length : " + by.length);
+        for (int i = 0; by.length > i * size; i++) {
+            out.write(by, i * size, Math.min(by.length - i * size, size));
             out.flush();
 //            printBytes(by,i*size,Math.min(by.length-i*size,size));
         }
@@ -117,33 +134,31 @@ public class LCServer {
         out.write(eof);
         out.flush();*/
     }
-    public static BufferedImage createScreenCapture(){
-        BufferedImage img=null;
-        try{
-            img=(new Robot()).createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-        }catch(AWTException awtException){
-            awtException.printStackTrace();
-        }
+
+    public static BufferedImage createScreenCapture() {
+        final BufferedImage img = robot.createScreenCapture(screenSize);
         return img;
     }
-    public void closeSession(){
+
+    public void closeSession() {
         out.println("Closing Session");
-        try{
+        try {
 //            dout.writeUTF("close session");
-            if(din!=null)
+            if (din != null)
                 din.close();
-            if(dout!=null)
+            if (dout != null)
                 dout.close();
-            if(socket!=null && !socket.isClosed())
+            if (socket != null && !socket.isClosed())
                 socket.close();
-            if(serverSocket!=null && !serverSocket.isClosed())
+            if (serverSocket != null && !serverSocket.isClosed())
                 serverSocket.close();
-        }catch(IOException ioException){
+        } catch (IOException ioException) {
             ioException.printStackTrace();
         }
-        isRunning=false;
+        isRunning = false;
     }
-    public boolean isRunning(){
+
+    public boolean isRunning() {
         return isRunning;
     }
 }
